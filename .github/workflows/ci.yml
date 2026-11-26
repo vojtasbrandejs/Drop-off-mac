@@ -1,0 +1,97 @@
+name: macOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: macos-26
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Run Swift tests
+        env:
+          DROPOFF_MIN_TEST_COUNT: "68"
+        run: ./scripts/run-tests.sh
+
+      - name: Run standalone checks
+        run: ./scripts/run-checks.sh
+
+      - name: Build signed application archive
+        run: ./scripts/build-app.sh
+
+      - name: Verify application signature
+        run: |
+          codesign --verify --deep --strict --verbose=2 .build/Drop-off.app
+          cmp LICENSE .build/Drop-off.app/Contents/Resources/LICENSE.txt
+          test "$(/usr/libexec/PlistBuddy \
+            -c 'Print :LSMultipleInstancesProhibited' \
+            .build/Drop-off.app/Contents/Info.plist)" = "true"
+
+      - name: Verify Universal 2 architectures
+        run: lipo .build/Drop-off.app/Contents/MacOS/Drop-off -verify_arch arm64 x86_64
+
+      - name: Verify application icon
+        run: |
+          test -s .build/Drop-off.app/Contents/Resources/AppIcon.icns
+          sips -g hasAlpha packaging/AppIcon.png | grep -q 'hasAlpha: yes'
+
+      - name: Verify distribution packages
+        run: |
+          (
+            cd dist
+            shasum -a 256 -c Drop-off.app.zip.sha256
+            shasum -a 256 -c Drop-off.dmg.sha256
+          )
+          hdiutil verify dist/Drop-off.dmg
+          MOUNT_POINT="$RUNNER_TEMP/drop-off-dmg"
+          mkdir -p "$MOUNT_POINT"
+          hdiutil attach \
+            -quiet \
+            -nobrowse \
+            -readonly \
+            -mountpoint "$MOUNT_POINT" \
+            dist/Drop-off.dmg
+          trap 'hdiutil detach -quiet "$MOUNT_POINT"' EXIT
+          test -x "$MOUNT_POINT/Drop-off.app/Contents/MacOS/Drop-off"
+          test -L "$MOUNT_POINT/Applications"
+          cmp LICENSE "$MOUNT_POINT/LICENSE.txt"
+          cmp LICENSE "$MOUNT_POINT/Drop-off.app/Contents/Resources/LICENSE.txt"
+          codesign --verify --deep --strict "$MOUNT_POINT/Drop-off.app"
+          lipo "$MOUNT_POINT/Drop-off.app/Contents/MacOS/Drop-off" \
+            -verify_arch arm64 x86_64
+          hdiutil detach -quiet "$MOUNT_POINT"
+          trap - EXIT
+
+      - name: Verify local source installation
+        run: |
+          git archive \
+            --format=tar.gz \
+            --prefix=Drop-off-source/ \
+            HEAD \
+            -o "$RUNNER_TEMP/Drop-off-source.tar.gz"
+          DROPOFF_INSTALLER_TESTING=1 \
+            DROPOFF_SOURCE_REF="$GITHUB_SHA" \
+            DROPOFF_SOURCE_ARCHIVE_URL="file://$RUNNER_TEMP/Drop-off-source.tar.gz" \
+            DROPOFF_INSTALL_DIR="$RUNNER_TEMP/installed" \
+            DROPOFF_LAUNCH_AFTER_INSTALL=0 \
+            ./scripts/install.sh
+          INSTALLED_APP="$RUNNER_TEMP/installed/Drop-off.app"
+          test -x "$INSTALLED_APP/Contents/MacOS/Drop-off"
+          codesign --verify --deep --strict "$INSTALLED_APP"
+          lipo "$INSTALLED_APP/Contents/MacOS/Drop-off" \
+            -verify_arch arm64 x86_64
+          test "$(/usr/libexec/PlistBuddy \
+            -c 'Print :CFBundleShortVersionString' \
+            "$INSTALLED_APP/Contents/Info.plist")" = "1.1.2"
+          test "$(/usr/libexec/PlistBuddy \
+            -c 'Print :CFBundleVersion' \
+            "$INSTALLED_APP/Contents/Info.plist")" = "6"
+          ! xattr -p com.apple.quarantine "$INSTALLED_APP"
