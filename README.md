@@ -7,7 +7,7 @@ A temporary macOS shelf for files, images, and links you want to drag between ap
 [Download from GitHub Releases](https://github.com/vojtasbrandejs/Drop-off-mac/releases/latest). The installer requires macOS 14.5 or later and Apple Command Line Tools with Swift 6 or newer.
 
 ```sh
-curl -fL -o install.sh https://github.com/vojtasbrandejs/Drop-off-mac/releases/download/v1.1.2/install.sh && bash install.sh
+curl -fL -o install.sh https://github.com/vojtasbrandejs/Drop-off-mac/releases/download/v1.1.3/install.sh && bash install.sh
 ```
 
 The installer builds the app on your Mac for Apple silicon and Intel, then opens it. Run it again to update.
