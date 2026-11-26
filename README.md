@@ -18,7 +18,9 @@ Shake the pointer while dragging a file to open a shelf, or choose **New Shelf**
 
 ## Demo
 
-[![Watch the 17-second Drop-off demo from dragging files to dropping them in another app](docs/demo-preview.jpg)](https://github.com/vojtasbrandejs/Drop-off-mac/releases/download/v1.1.3/drop-off-demo.mp4)
+https://github.com/user-attachments/assets/2ca38bf4-89a6-41d4-83a5-fe8b9b17c136
+
+[Download MP4](https://github.com/vojtasbrandejs/Drop-off-mac/releases/download/v1.1.3/drop-off-demo.mp4)
 
 ## Build from source
 
