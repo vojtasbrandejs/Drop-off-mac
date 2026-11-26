@@ -20,7 +20,7 @@ Shake the pointer while dragging a file to open a shelf, or choose **New Shelf**
 
 ```sh
 DROPOFF_PACKAGE_DISTRIBUTION=0 ./scripts/build-app.sh
-./scripts/run-checks.sh
+./scripts/run-tests.sh
 ```
 
 [Privacy](PRIVACY.md) · [Security](SECURITY.md) · [MIT License](LICENSE)

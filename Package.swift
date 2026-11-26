@@ -1,25 +1,6 @@
 // swift-tools-version: 6.0
 
 import PackageDescription
-import Foundation
-
-let isContinuousIntegration = ProcessInfo.processInfo.environment["CI"] == "true"
-let localTestingFrameworkPath = "/Library/Developer/CommandLineTools/Library/Developer/Frameworks"
-let localTestingLibraryPath = "/Library/Developer/CommandLineTools/Library/Developer/usr/lib"
-
-let localTestSwiftSettings: [SwiftSetting]? = isContinuousIntegration ? nil : [
-    .unsafeFlags(["-F", localTestingFrameworkPath]),
-]
-
-let localTestLinkerSettings: [LinkerSetting]? = isContinuousIntegration ? nil : [
-    .unsafeFlags([
-        "-F", localTestingFrameworkPath,
-        "-Xlinker", "-rpath",
-        "-Xlinker", localTestingFrameworkPath,
-        "-Xlinker", "-rpath",
-        "-Xlinker", localTestingLibraryPath,
-    ]),
-]
 
 let package = Package(
     name: "Drop-off",
@@ -37,9 +18,7 @@ let package = Package(
         .testTarget(
             name: "DropOffTests",
             dependencies: ["DropOff"],
-            path: "Tests/DropOffTests",
-            swiftSettings: localTestSwiftSettings,
-            linkerSettings: localTestLinkerSettings
+            path: "Tests/DropOffTests"
         ),
     ],
     swiftLanguageModes: [.v5]
