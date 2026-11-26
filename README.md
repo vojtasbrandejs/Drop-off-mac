@@ -16,6 +16,10 @@ The installer builds the app on your Mac for Apple silicon and Intel, then opens
 
 Shake the pointer while dragging a file to open a shelf, or choose **New Shelf** from the menu bar. Drop items onto it, then drag them into the destination app.
 
+## Demo
+
+[![Watch the 17-second Drop-off demo from dragging files to dropping them in another app](docs/demo-preview.jpg)](https://github.com/vojtasbrandejs/Drop-off-mac/releases/download/v1.1.3/drop-off-demo.mp4)
+
 ## Build from source
 
 ```sh
